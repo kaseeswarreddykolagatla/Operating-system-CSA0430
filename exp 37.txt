@@ -1,0 +1,44 @@
+#include <stdio.h>
+
+#define MAX_REQUESTS 10
+
+typedef struct {
+    int track_number;
+} Request;
+
+Request requests[MAX_REQUESTS];
+int num_requests = 0;
+int current_track = 0;
+int total_head_movement = 0;
+
+void add_request(int track_number) {
+    requests[num_requests].track_number = track_number;
+    num_requests++;
+}
+
+void fcfs_schedule() {
+    printf("FCFS Scheduling:\n");
+    for (int i = 0; i < num_requests; i++) {
+        int head_movement = abs(requests[i].track_number - current_track);
+        total_head_movement += head_movement;
+        printf("Move from track %d to track %d (head movement: %d)\n",
+               current_track, requests[i].track_number, head_movement);
+        current_track = requests[i].track_number;
+    }
+    printf("Total head movement: %d\n", total_head_movement);
+}
+
+int main() {
+    add_request(176);
+    add_request(79);
+    add_request(34);
+    add_request(60);
+    add_request(92);
+    add_request(11);
+    add_request(41);
+    add_request(114);
+
+    fcfs_schedule();
+
+    return 0;
+}

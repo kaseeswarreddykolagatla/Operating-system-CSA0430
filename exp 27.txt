@@ -1,0 +1,59 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <dirent.h>
+#include <sys/stat.h>
+#include <string.h>
+#include <time.h>
+
+#define MAX_FILENAME 256
+
+void print_file_info(char *filename, struct stat *sb) {
+    char perms[11];
+    strftime(perms, 11, "%b %d %H:%M", localtime(&sb->st_mtime));
+    printf("%c", (sb->st_mode & S_IFDIR)? 'd' : '-');
+    printf("%c", (sb->st_mode & S_IRUSR)? 'r' : '-');
+    printf("%c", (sb->st_mode & S_IWUSR)? 'w' : '-');
+    printf("%c", (sb->st_mode & S_IXUSR)? 'x' : '-');
+    printf("%c", (sb->st_mode & S_IRGRP)? 'r' : '-');
+    printf("%c", (sb->st_mode & S_IWGRP)? 'w' : '-');
+    printf("%c", (sb->st_mode & S_IXGRP)? 'x' : '-');
+    printf("%c", (sb->st_mode & S_IROTH)? 'r' : '-');
+    printf("%c", (sb->st_mode & S_IWOTH)? 'w' : '-');
+    printf("%c ", (sb->st_mode & S_IXOTH)? 'x' : '-');
+    printf("%2d ", sb->st_nlink);
+    printf("%8d ", sb->st_size);
+    printf("%s ", perms);
+    printf("%s\n", filename);
+}
+
+int main(int argc, char *argv[]) {
+    DIR *dirp;
+    struct dirent *dp;
+    struct stat sb;
+    char path[MAX_FILENAME];
+
+    if (argc == 1) {
+        strcpy(path, ".");
+    } else {
+        strcpy(path, argv[1]);
+    }
+
+    dirp = opendir(path);
+    if (dirp == NULL) {
+        perror("opendir");
+        exit(1);
+    }
+
+    while ((dp = readdir(dirp))!= NULL) {
+        char filename[MAX_FILENAME];
+        sprintf(filename, "%s/%s", path, dp->d_name);
+        if (stat(filename, &sb) == -1) {
+            perror("stat");
+            continue;
+        }
+        print_file_info(dp->d_name, &sb);
+    }
+
+    closedir(dirp);
+    return 0;
+}

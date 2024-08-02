@@ -1,0 +1,69 @@
+#include <stdio.h>
+#include <pthread.h>
+#include <unistd.h>
+
+#define NUM_PHILOSOPHERS 5
+#define NUM_CHOPSTICKS 5
+
+pthread_mutex_t chopsticks[NUM_CHOPSTICKS];
+
+void *philosopher(void *arg) {
+    int id = *(int *)arg;
+    int left_chopstick = id;
+    int right_chopstick = (id + 1) % NUM_CHOPSTICKS;
+
+    while (1) {
+        // Think for a random amount of time
+        usleep(rand() % 1000000);
+
+        // Pick up left chopstick
+        pthread_mutex_lock(&chopsticks[left_chopstick]);
+        printf("Philosopher %d picked up chopstick %d\n", id, left_chopstick);
+
+        // Pick up right chopstick
+        pthread_mutex_lock(&chopsticks[right_chopstick]);
+        printf("Philosopher %d picked up chopstick %d\n", id, right_chopstick);
+
+        // Eat for a random amount of time
+        usleep(rand() % 1000000);
+        printf("Philosopher %d is eating\n", id);
+
+        // Put down right chopstick
+        pthread_mutex_unlock(&chopsticks[right_chopstick]);
+        printf("Philosopher %d put down chopstick %d\n", id, right_chopstick);
+
+        // Put down left chopstick
+        pthread_mutex_unlock(&chopsticks[left_chopstick]);
+        printf("Philosopher %d put down chopstick %d\n", id, left_chopstick);
+    }
+
+    return NULL;
+}
+
+int main() {
+    pthread_t philosophers[NUM_PHILOSOPHERS];
+    int ids[NUM_PHILOSOPHERS];
+
+    // Initialize chopsticks
+    for (int i = 0; i < NUM_CHOPSTICKS; i++) {
+        pthread_mutex_init(&chopsticks[i], NULL);
+    }
+
+    // Create philosophers
+    for (int i = 0; i < NUM_PHILOSOPHERS; i++) {
+        ids[i] = i;
+        pthread_create(&philosophers[i], NULL, philosopher, &ids[i]);
+    }
+
+    // Wait for philosophers to finish
+    for (int i = 0; i < NUM_PHILOSOPHERS; i++) {
+        pthread_join(philosophers[i], NULL);
+    }
+
+    // Clean up
+    for (int i = 0; i < NUM_CHOPSTICKS; i++) {
+        pthread_mutex_destroy(&chopsticks[i]);
+    }
+
+    return 0;
+}

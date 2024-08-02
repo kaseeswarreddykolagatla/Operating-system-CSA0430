@@ -1,0 +1,92 @@
+#include <stdio.h>
+
+#define MAX_REQUESTS 10
+#define TOTAL_TRACKS 200
+
+typedef struct {
+    int track_number;
+} Request;
+
+Request requests[MAX_REQUESTS];
+int num_requests = 0;
+int current_track = 0;
+int total_head_movement = 0;
+
+void add_request(int track_number) {
+    requests[num_requests].track_number = track_number;
+    num_requests++;
+}
+
+void c_scan_schedule() {
+    printf("C-SCAN Scheduling:\n");
+    int start_track = current_track;
+    int end_track = TOTAL_TRACKS - 1;
+
+    // Serve requests in ascending order
+    for (int i = 0; i < num_requests; i++) {
+        int min_diff = TOTAL_TRACKS;
+        int next_track = -1;
+        for (int j = 0; j < num_requests; j++) {
+            if (requests[j].track_number >= start_track && requests[j].track_number <= end_track) {
+                int diff = abs(requests[j].track_number - current_track);
+                if (diff < min_diff) {
+                    min_diff = diff;
+                    next_track = requests[j].track_number;
+                }
+            }
+        }
+        if (next_track != -1) {
+            int head_movement = abs(next_track - current_track);
+            total_head_movement += head_movement;
+            printf("Move from track %d to track %d (head movement: %d)\n",
+                   current_track, next_track, head_movement);
+            current_track = next_track;
+        }
+    }
+
+    // Move to the starting track
+    int head_movement = abs(start_track - current_track);
+    total_head_movement += head_movement;
+    printf("Move from track %d to track %d (head movement: %d)\n",
+           current_track, start_track, head_movement);
+    current_track = start_track;
+
+    // Serve remaining requests in descending order
+    for (int i = 0; i < num_requests; i++) {
+        int max_diff = -1;
+        int next_track = -1;
+        for (int j = 0; j < num_requests; j++) {
+            if (requests[j].track_number >= 0 && requests[j].track_number < start_track) {
+                int diff = abs(requests[j].track_number - current_track);
+                if (diff > max_diff) {
+                    max_diff = diff;
+                    next_track = requests[j].track_number;
+                }
+            }
+        }
+        if (next_track != -1) {
+            int head_movement = abs(next_track - current_track);
+            total_head_movement += head_movement;
+            printf("Move from track %d to track %d (head movement: %d)\n",
+                   current_track, next_track, head_movement);
+            current_track = next_track;
+        }
+    }
+
+    printf("Total head movement: %d\n", total_head_movement);
+}
+
+int main() {
+    add_request(176);
+    add_request(79);
+    add_request(34);
+    add_request(60);
+    add_request(92);
+    add_request(11);
+    add_request(41);
+    add_request(114);
+
+    c_scan_schedule();
+
+    return 0;
+}

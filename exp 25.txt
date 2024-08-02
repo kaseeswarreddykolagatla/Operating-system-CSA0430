@@ -1,0 +1,66 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <dirent.h>
+
+int main() {
+    // fcntl system call
+    int fd = open("example.txt", O_RDWR | O_CREAT, 0644);
+    if (fd == -1) {
+        perror("open");
+        exit(1);
+    }
+    int flags = fcntl(fd, F_GETFL);
+    if (flags == -1) {
+        perror("fcntl");
+        exit(1);
+    }
+    printf("Initial flags: %d\n", flags);
+    flags |= O_NONBLOCK;
+    if (fcntl(fd, F_SETFL, flags) == -1) {
+        perror("fcntl");
+        exit(1);
+    }
+    printf("Flags after setting O_NONBLOCK: %d\n", flags);
+    close(fd);
+
+    // seek system call
+    fd = open("example.txt", O_RDWR);
+    if (fd == -1) {
+        perror("open");
+        exit(1);
+    }
+    off_t offset = lseek(fd, 10, SEEK_SET);
+    if (offset == -1) {
+        perror("lseek");
+        exit(1);
+    }
+    printf("Seeked to offset %ld\n", offset);
+    close(fd);
+
+    // stat system call
+    struct stat sb;
+    if (stat("example.txt", &sb) == -1) {
+        perror("stat");
+        exit(1);
+    }
+    printf("File size: %ld bytes\n", sb.st_size);
+    printf("File permissions: %o\n", sb.st_mode & 0777);
+
+    // opendir and readdir system calls
+    DIR *dirp;
+    struct dirent *dp;
+    dirp = opendir(".");
+    if (dirp == NULL) {
+        perror("opendir");
+        exit(1);
+    }
+    while ((dp = readdir(dirp))!= NULL) {
+        printf("File name: %s\n", dp->d_name);
+    }
+    closedir(dirp);
+
+    return 0;
+}

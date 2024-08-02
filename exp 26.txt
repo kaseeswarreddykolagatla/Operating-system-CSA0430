@@ -1,0 +1,134 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <string.h>
+
+#define MAX_FILE_NAME 256
+
+void create_file(char* file_name) {
+    int fd = creat(file_name, 0644);
+    if(fd == -1) {
+        perror("creat");
+        exit(1);
+    }
+    printf("File created: %s\n", file_name);
+    close(fd);
+}
+
+void delete_file(char* file_name) {
+    if(unlink(file_name) == -1) {
+        perror("unlink");
+        exit(1);
+    }
+    printf("File deleted: %s\n", file_name);
+}
+
+void rename_file(char* old_name, char* new_name) {
+    if(rename(old_name, new_name) == -1) {
+        perror("rename");
+        exit(1);
+    }
+    printf("File renamed from %s to %s\n", old_name, new_name);
+}
+
+void copy_file(char* source, char* destination) {
+    int src_fd = open(source, O_RDONLY);
+    if(src_fd == -1) {
+        perror("open");
+        exit(1);
+    }
+
+    int dst_fd = creat(destination, 0644);
+    if(dst_fd == -1) {
+        perror("creat");
+        exit(1);
+    }
+
+    char buffer[1024];
+    int bytes_read;
+    while((bytes_read = read(src_fd, buffer, 1024)) > 0) {
+        if(write(dst_fd, buffer, bytes_read)!= bytes_read) {
+            perror("write");
+            exit(1);
+        }
+    }
+
+    close(src_fd);
+    close(dst_fd);
+    printf("File copied from %s to %s\n", source, destination);
+}
+
+void display_file_info(char* file_name) {
+    struct stat file_stat;
+    if(stat(file_name, &file_stat) == -1) {
+        perror("stat");
+        exit(1);
+    }
+
+    printf("File name: %s\n", file_name);
+    printf("File size: %ld bytes\n", file_stat.st_size);
+    printf("File permissions: %o\n", file_stat.st_mode & 0777);
+    printf("File type: %s\n", S_ISREG(file_stat.st_mode)? "Regular file" : "Not a regular file");
+}
+
+int main() {
+    char file_name[MAX_FILE_NAME];
+    char old_name[MAX_FILE_NAME];
+    char new_name[MAX_FILE_NAME];
+    char source[MAX_FILE_NAME];
+    char destination[MAX_FILE_NAME];
+
+    int choice;
+    while(1) {
+        printf("File Management Operations:\n");
+        printf("1. Create file\n");
+        printf("2. Delete file\n");
+        printf("3. Rename file\n");
+        printf("4. Copy file\n");
+        printf("5. Display file info\n");
+        printf("6. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch(choice) {
+            case 1:
+                printf("Enter file name: ");
+                scanf("%s", file_name);
+                create_file(file_name);
+                break;
+            case 2:
+                printf("Enter file name: ");
+                scanf("%s", file_name);
+                delete_file(file_name);
+                break;
+            case 3:
+                printf("Enter old file name: ");
+                scanf("%s", old_name);
+                printf("Enter new file name: ");
+                scanf("%s", new_name);
+                rename_file(old_name, new_name);
+                break;
+            case 4:
+                printf("Enter source file name: ");
+                scanf("%s", source);
+                printf("Enter destination file name: ");
+                scanf("%s", destination);
+                copy_file(source, destination);
+                break;
+            case 5:
+                printf("Enter file name: ");
+                scanf("%s", file_name);
+                display_file_info(file_name);
+                break;
+            case 6:
+                exit(0);
+            default:
+                printf("Invalid choice\n");
+        }
+    }
+
+    return 0;
+}

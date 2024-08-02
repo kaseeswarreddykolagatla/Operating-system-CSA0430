@@ -1,0 +1,79 @@
+#include <stdio.h>
+
+#define MAX_REQUESTS 10
+
+// Structure to represent a disk request
+typedef struct Request {
+    int track;
+    int direction; // 1 for forward, -1 for backward
+} Request;
+
+// Function to simulate SCAN disk scheduling algorithm
+void simulateSCAN(Request requests[], int numRequests, int initialHeadPosition) {
+    int currentHeadPosition = initialHeadPosition;
+    int totalSeekTime = 0;
+
+    printf("Simulating SCAN disk scheduling algorithm...\n");
+    printf("Initial head position: %d\n", initialHeadPosition);
+
+    // Sort requests by track number
+    for (int i = 0; i < numRequests; i++) {
+        for (int j = i + 1; j < numRequests; j++) {
+            if (requests[i].track > requests[j].track) {
+                Request temp = requests[i];
+                requests[i] = requests[j];
+                requests[j] = temp;
+            }
+        }
+    }
+
+    // Move the head to the first request
+    int seekTime = abs(requests[0].track - currentHeadPosition);
+    totalSeekTime += seekTime;
+    currentHeadPosition = requests[0].track;
+    printf("Moving to track %d (seek time: %d)\n", currentHeadPosition, seekTime);
+
+    // Process the remaining requests
+    for (int i = 1; i < numRequests; i++) {
+        seekTime = abs(requests[i].track - currentHeadPosition);
+        totalSeekTime += seekTime;
+        currentHeadPosition = requests[i].track;
+        printf("Moving to track %d (seek time: %d)\n", currentHeadPosition, seekTime);
+    }
+
+    // Move the head to the end of the disk (if necessary)
+    if (requests[numRequests - 1].direction == 1) {
+        seekTime = abs(199 - currentHeadPosition);
+        totalSeekTime += seekTime;
+        currentHeadPosition = 199;
+        printf("Moving to track 199 (seek time: %d)\n", seekTime);
+    } else {
+        seekTime = abs(0 - currentHeadPosition);
+        totalSeekTime += seekTime;
+        currentHeadPosition = 0;
+        printf("Moving to track 0 (seek time: %d)\n", seekTime);
+    }
+
+    printf("Total seek time: %d\n", totalSeekTime);
+}
+
+int main() {
+    Request requests[MAX_REQUESTS] = {
+        {50, 1},
+        {20, 1},
+        {100, 1},
+        {30, 1},
+        {80, 1},
+        {10, 1},
+        {60, 1},
+        {40, 1},
+        {90, 1},
+        {70, 1}
+    };
+    int numRequests = sizeof(requests) / sizeof(Request);
+    int initialHeadPosition = 50;
+
+    simulateSCAN(requests, numRequests, initialHeadPosition);
+
+    return 0;
+}

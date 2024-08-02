@@ -1,0 +1,71 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_BLOCKS 10
+
+// Structure to represent a disk block
+typedef struct Block {
+    int data;
+    struct Block* next;
+} Block;
+
+// Structure to represent a file
+typedef struct File {
+    Block* firstBlock;
+    Block* lastBlock;
+} File;
+
+// Function to create a new disk block
+Block* createBlock(int data) {
+    Block* block = (Block*) malloc(sizeof(Block));
+    block->data = data;
+    block->next = NULL;
+    return block;
+}
+
+// Function to create a new file
+File* createFile() {
+    File* file = (File*) malloc(sizeof(File));
+    file->firstBlock = NULL;
+    file->lastBlock = NULL;
+    return file;
+}
+
+// Function to add a block to a file
+void addBlockToFile(File* file, int data) {
+    Block* block = createBlock(data);
+    if (file->firstBlock == NULL) {
+        file->firstBlock = block;
+        file->lastBlock = block;
+    } else {
+        file->lastBlock->next = block;
+        file->lastBlock = block;
+    }
+}
+
+// Function to simulate linked allocation file allocation strategy
+void simulateLinkedAllocation(File* file) {
+    printf("Simulating linked allocation file allocation strategy...\n");
+    Block* currentBlock = file->firstBlock;
+    while (currentBlock != NULL) {
+        printf("Reading block: data = %d\n", currentBlock->data);
+        currentBlock = currentBlock->next;
+    }
+    printf("File read successfully!\n");
+}
+
+int main() {
+    File* file = createFile();
+
+    // Add some blocks to the file
+    addBlockToFile(file, 10);
+    addBlockToFile(file, 20);
+    addBlockToFile(file, 30);
+    addBlockToFile(file, 40);
+    addBlockToFile(file, 50);
+
+    // Simulate linked allocation file allocation strategy
+    simulateLinkedAllocation(file);
+
+    return 0;
+}

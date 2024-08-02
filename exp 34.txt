@@ -1,0 +1,46 @@
+#include <stdio.h>
+
+#define MAX_RECORDS 10
+
+// Structure to represent a record
+typedef struct {
+    int data;
+} Record;
+
+// Function to simulate file allocation strategy
+void simulateFileAllocationStrategy(Record records[], int numRecords) {
+    int i;
+    printf("Simulating file allocation strategy...\n");
+    for (i = 0; i < numRecords; i++) {
+        printf("Accessing record %d...\n", i);
+        // Read all previous records to access the current record
+        for (int j = 0; j <= i; j++) {
+            printf("Reading record %d: data = %d\n", j, records[j].data);
+        }
+        printf("Accessed record %d successfully!\n", i);
+    }
+}
+
+int main() {
+    Record records[MAX_RECORDS];
+    int numRecords;
+
+    // Initialize records with some sample data
+    for (int i = 0; i < MAX_RECORDS; i++) {
+        records[i].data = i * 2;
+    }
+
+    // Ask user for the number of records to access
+    printf("Enter the number of records to access (max %d): ", MAX_RECORDS);
+    scanf("%d", &numRecords);
+
+    if (numRecords > MAX_RECORDS) {
+        printf("Error: cannot access more than %d records!\n", MAX_RECORDS);
+        return 1;
+    }
+
+    // Simulate file allocation strategy
+    simulateFileAllocationStrategy(records, numRecords);
+
+    return 0;
+}

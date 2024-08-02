@@ -1,0 +1,76 @@
+#include <stdio.h>
+
+#define MAX_PROCESSES 10
+#define TIME_QUANTUM 2
+
+typedef struct {
+    int pid;
+    int burst_time;
+    int arrival_time;
+    int waiting_time;
+    int turnaround_time;
+} Process;
+
+void round_robin(Process processes[], int n) {
+    int current_time = 0;
+    int i, j;
+    int total_waiting_time = 0;
+    int total_turnaround_time = 0;
+
+    printf("PID\tBT\tAT\tWT\tTAT\n");
+
+    while (1) {
+        int all_processes_completed = 1;
+
+        for (i = 0; i < n; i++) {
+            if (processes[i].burst_time > 0) {
+                all_processes_completed = 0;
+
+                if (processes[i].arrival_time <= current_time) {
+                    printf("Process %d is running...\n", processes[i].pid);
+
+                    // Execute the process for TIME_QUANTUM units
+                    int time_executed = (processes[i].burst_time > TIME_QUANTUM) ? TIME_QUANTUM : processes[i].burst_time;
+                    processes[i].burst_time -= time_executed;
+                    current_time += time_executed;
+
+                    // Update waiting time and turnaround time
+                    processes[i].waiting_time = current_time - processes[i].arrival_time - processes[i].burst_time;
+                    processes[i].turnaround_time = current_time - processes[i].arrival_time;
+
+                    printf("Process %d: WT=%d, TAT=%d\n", processes[i].pid, processes[i].waiting_time, processes[i].turnaround_time);
+                }
+            }
+        }
+
+        if (all_processes_completed) {
+            break;
+        }
+    }
+
+    // Calculate average waiting time and average turnaround time
+    for (j = 0; j < n; j++) {
+        total_waiting_time += processes[j].waiting_time;
+        total_turnaround_time += processes[j].turnaround_time;
+    }
+
+    printf("Average Waiting Time: %.2f\n", (float)total_waiting_time / n);
+    printf("Average Turnaround Time: %.2f\n", (float)total_turnaround_time / n);
+}
+
+int main() {
+    Process processes[MAX_PROCESSES];
+    int n;
+
+    printf("Enter the number of processes: ");
+    scanf("%d", &n);
+
+    printf("Enter the process details (PID, Burst Time, Arrival Time):\n");
+    for (int i = 0; i < n; i++) {
+        scanf("%d %d %d", &processes[i].pid, &processes[i].burst_time, &processes[i].arrival_time);
+    }
+
+    round_robin(processes, n);
+
+    return 0;
+}

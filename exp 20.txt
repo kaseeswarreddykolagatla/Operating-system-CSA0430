@@ -1,0 +1,72 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <semaphore.h>
+
+#define MAX_READERS 5
+#define MAX_WRITERS 5
+
+sem_t mutex, wrt; // semaphores for mutual exclusion and writer access
+
+int reader_count = 0; // count of active readers
+
+void* reader(void* arg) {
+    int id = *(int*)arg;
+    while(1) {
+        sem_wait(&mutex); // wait for access to reader count
+        reader_count++;
+        if(reader_count == 1) sem_wait(&wrt); // if first reader, wait for writer to finish
+        sem_post(&mutex); // release access to reader count
+
+        printf("Reader %d is reading...\n", id);
+        sleep(1); // simulate reading
+
+        sem_wait(&mutex); // wait for access to reader count
+        reader_count--;
+        if(reader_count == 0) sem_post(&wrt); // if last reader, release writer
+        sem_post(&mutex); // release access to reader count
+    }
+    return NULL;
+}
+
+void* writer(void* arg) {
+    int id = *(int*)arg;
+    while(1) {
+        sem_wait(&wrt); // wait for writer access
+        printf("Writer %d is writing...\n", id);
+        sleep(1); // simulate writing
+        sem_post(&wrt); // release writer access
+    }
+    return NULL;
+}
+
+int main() {
+    sem_init(&mutex, 0, 1); // initialize mutex semaphore
+    sem_init(&wrt, 0, 1); // initialize writer semaphore
+
+    pthread_t readers[MAX_READERS], writers[MAX_WRITERS];
+    int reader_ids[MAX_READERS], writer_ids[MAX_WRITERS];
+
+    for(int i = 0; i < MAX_READERS; i++) {
+        reader_ids[i] = i;
+        pthread_create(&readers[i], NULL, reader, &reader_ids[i]);
+    }
+
+    for(int i = 0; i < MAX_WRITERS; i++) {
+        writer_ids[i] = i;
+        pthread_create(&writers[i], NULL, writer, &writer_ids[i]);
+    }
+
+    for(int i = 0; i < MAX_READERS; i++) {
+        pthread_join(readers[i], NULL);
+    }
+
+    for(int i = 0; i < MAX_WRITERS; i++) {
+        pthread_join(writers[i], NULL);
+    }
+
+    sem_destroy(&mutex);
+    sem_destroy(&wrt);
+
+    return 0;
+}

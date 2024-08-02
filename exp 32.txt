@@ -1,0 +1,86 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define PAGE_TABLE_SIZE 3
+#define REFERENCE_STRING_SIZE 10
+
+// Structure to represent a page
+typedef struct {
+    int page_number;
+    int last_used_time;
+} page_t;
+
+// Function to initialize the page table
+void init_page_table(page_t page_table[]) {
+    for (int i = 0; i < PAGE_TABLE_SIZE; i++) {
+        page_table[i].page_number = -1;
+        page_table[i].last_used_time = -1;
+    }
+}
+
+// Function to find a page in the page table
+int find_page(page_t page_table[], int page_number) {
+    for (int i = 0; i < PAGE_TABLE_SIZE; i++) {
+        if (page_table[i].page_number == page_number) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+// Function to update the last used time of a page
+void update_last_used_time(page_t page_table[], int page_number, int time) {
+    int index = find_page(page_table, page_number);
+    if (index != -1) {
+        page_table[index].last_used_time = time;
+    }
+}
+
+// Function to find the least recently used page
+int find_lru_page(page_t page_table[]) {
+    int lru_index = 0;
+    int min_time = page_table[0].last_used_time;
+    for (int i = 1; i < PAGE_TABLE_SIZE; i++) {
+        if (page_table[i].last_used_time < min_time) {
+            lru_index = i;
+            min_time = page_table[i].last_used_time;
+        }
+    }
+    return lru_index;
+}
+
+// Function to replace a page in the page table
+void replace_page(page_t page_table[], int new_page_number, int time) {
+    int lru_index = find_lru_page(page_table);
+    page_table[lru_index].page_number = new_page_number;
+    page_table[lru_index].last_used_time = time;
+}
+
+// Function to simulate the LRU paging technique
+void simulate_lru(page_t page_table[], int reference_string[]) {
+    int time = 0;
+    for (int i = 0; i < REFERENCE_STRING_SIZE; i++) {
+        int page_number = reference_string[i];
+        int index = find_page(page_table, page_number);
+        if (index == -1) {
+            // Page fault, replace a page
+            replace_page(page_table, page_number, time);
+            printf("Page fault, replacing page %d with page %d at time %d\n", page_table[find_lru_page(page_table)].page_number, page_number, time);
+        } else {
+            // Update the last used time of the page
+            update_last_used_time(page_table, page_number, time);
+        }
+        time++;
+    }
+}
+
+int main() {
+    page_t page_table[PAGE_TABLE_SIZE];
+    init_page_table(page_table);
+
+    int reference_string[REFERENCE_STRING_SIZE] = {1, 2, 3, 1, 4, 5, 2, 1, 3, 4};
+
+    simulate_lru(page_table, reference_string);
+
+    return 0;
+}

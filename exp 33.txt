@@ -1,0 +1,68 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define PAGE_SIZE 4
+#define MEMORY_SIZE 16
+#define PAGE_TABLE_SIZE 4
+
+int page_table[PAGE_TABLE_SIZE];
+int memory[MEMORY_SIZE];
+int page_faults = 0;
+
+void optimal_page_replacement(int page, int pages[], int num_pages, int current_page) {
+    int max_distance = 0;
+    int page_to_replace = -1;
+    for (int i = 0; i < PAGE_TABLE_SIZE; i++) {
+        int distance = -1;
+        for (int j = current_page; j < num_pages; j++) {
+            if (page_table[i] == pages[j]) {
+                distance = j - current_page;
+                break;
+            }
+        }
+        if (distance > max_distance) {
+            max_distance = distance;
+            page_to_replace = i;
+        }
+    }
+    page_table[page_to_replace] = page;
+    printf("Page %d replaced page %d\n", page, page_table[page_to_replace]);
+}
+
+void access_page(int page, int pages[], int num_pages, int current_page) {
+    int found = 0;
+    for (int i = 0; i < PAGE_TABLE_SIZE; i++) {
+        if (page_table[i] == page) {
+            found = 1;
+            break;
+        }
+    }
+    if (!found) {
+        page_faults++;
+        optimal_page_replacement(page, pages, num_pages, current_page);
+        printf("Page fault! Page %d loaded into memory\n", page);
+    } else {
+        printf("Page %d is already in memory\n", page);
+    }
+}
+
+int main() {
+    // Initialize page table and memory
+    for (int i = 0; i < PAGE_TABLE_SIZE; i++) {
+        page_table[i] = -1;
+    }
+    for (int i = 0; i < MEMORY_SIZE; i++) {
+        memory[i] = -1;
+    }
+
+    // Simulate page accesses
+    int pages[] = {1, 2, 3, 4, 1, 2, 5, 6, 7, 8, 9, 10};
+    int num_pages = sizeof(pages) / sizeof(pages[0]);
+    for (int i = 0; i < num_pages; i++) {
+        access_page(pages[i], pages, num_pages, i);
+    }
+
+    printf("Page faults: %d\n", page_faults);
+
+    return 0;
+}

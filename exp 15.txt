@@ -1,0 +1,114 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+#define MAX_DIRS 10
+#define MAX_FILES 10
+#define MAX_NAME 20
+
+typedef struct {
+    char name[MAX_NAME];
+    Directory* dirs[MAX_DIRS];
+    File files[MAX_FILES];
+    int numDirs;
+    int numFiles;
+} Directory;
+
+typedef struct {
+    char name[MAX_NAME];
+    int size;
+} File;
+
+void createDirectory(Directory* dir) {
+    int i;
+    for (i = 0; i < MAX_DIRS; i++) {
+        dir->dirs[i] = NULL;
+    }
+    dir->numDirs = 0;
+    dir->numFiles = 0;
+}
+
+void addDirectory(Directory* dir, char* name) {
+    if (dir->numDirs < MAX_DIRS) {
+        dir->dirs[dir->numDirs] = (Directory*)malloc(sizeof(Directory));
+        createDirectory(dir->dirs[dir->numDirs]);
+        strcpy(dir->dirs[dir->numDirs]->name, name);
+        dir->numDirs++;
+    } else {
+        printf("Directory is full!\n");
+    }
+}
+
+void deleteDirectory(Directory* dir, char* name) {
+    int i;
+    for (i = 0; i < dir->numDirs; i++) {
+        if (strcmp(dir->dirs[i]->name, name) == 0) {
+            free(dir->dirs[i]);
+            for (; i < dir->numDirs - 1; i++) {
+                dir->dirs[i] = dir->dirs[i + 1];
+            }
+            dir->numDirs--;
+            return;
+        }
+    }
+    printf("Directory not found!\n");
+}
+
+void addFile(Directory* dir, char* name, int size) {
+    if (dir->numFiles < MAX_FILES) {
+        strcpy(dir->files[dir->numFiles].name, name);
+        dir->files[dir->numFiles].size = size;
+        dir->numFiles++;
+    } else {
+        printf("Directory is full!\n");
+    }
+}
+
+void deleteFile(Directory* dir, char* name) {
+    int i;
+    for (i = 0; i < dir->numFiles; i++) {
+        if (strcmp(dir->files[i].name, name) == 0) {
+            dir->numFiles--;
+            for (; i < dir->numFiles; i++) {
+                dir->files[i] = dir->files[i + 1];
+            }
+            return;
+        }
+    }
+    printf("File not found!\n");
+}
+
+void listFiles(Directory* dir) {
+    int i;
+    printf("Files in directory %s:\n", dir->name);
+    for (i = 0; i < dir->numFiles; i++) {
+        printf("%s (%d bytes)\n", dir->files[i].name, dir->files[i].size);
+    }
+    for (i = 0; i < dir->numDirs; i++) {
+        printf("\nDirectory %s:\n", dir->dirs[i]->name);
+        listFiles(dir->dirs[i]);
+    }
+}
+
+int main() {
+    Directory root;
+    createDirectory(&root);
+
+    addDirectory(&root, "dir1");
+    addDirectory(&root, "dir2");
+
+    addFile(&root.dirs[0], "file1.txt", 1024);
+    addFile(&root.dirs[1], "file2.txt", 512);
+    addFile(&root.dirs[0], "file3.txt", 2048);
+
+    listFiles(&root);
+
+    deleteFile(&root.dirs[0], "file1.txt");
+
+    listFiles(&root);
+
+    deleteDirectory(&root, "dir1");
+
+    listFiles(&root);
+
+   

@@ -1,0 +1,74 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_FILES 10
+#define MAX_BLOCKS 100
+#define INDEX_BLOCK_SIZE 10
+
+typedef struct {
+    int block_numbers[INDEX_BLOCK_SIZE];
+} IndexBlock;
+
+typedef struct {
+    char filename[20];
+    IndexBlock index_block;
+    int num_blocks;
+} File;
+
+File files[MAX_FILES];
+int next_available_block = 0;
+
+void create_file(char filename[], int num_blocks) {
+    int i;
+    for (i = 0; i < MAX_FILES; i++) {
+        if (files[i].filename[0] == '\0') {
+            strcpy(files[i].filename, filename);
+            files[i].num_blocks = num_blocks;
+            for (int j = 0; j < num_blocks; j++) {
+                files[i].index_block.block_numbers[j] = next_available_block++;
+            }
+            printf("File '%s' created with %d blocks\n", filename, num_blocks);
+            return;
+        }
+    }
+    printf("Error: No more space for files\n");
+}
+
+void delete_file(char filename[]) {
+    int i;
+    for (i = 0; i < MAX_FILES; i++) {
+        if (strcmp(files[i].filename, filename) == 0) {
+            for (int j = 0; j < files[i].num_blocks; j++) {
+                next_available_block--;
+            }
+            files[i].filename[0] = '\0';
+            printf("File '%s' deleted\n", filename);
+            return;
+        }
+    }
+    printf("Error: File '%s' not found\n", filename);
+}
+
+void display_file_system() {
+    printf("File System:\n");
+    for (int i = 0; i < MAX_FILES; i++) {
+        if (files[i].filename[0]!= '\0') {
+            printf("File '%s': ", files[i].filename);
+            for (int j = 0; j < files[i].num_blocks; j++) {
+                printf("%d ", files[i].index_block.block_numbers[j]);
+            }
+            printf("\n");
+        }
+    }
+    printf("Next available block: %d\n", next_available_block);
+}
+
+int main() {
+    create_file("file1.txt", 3);
+    create_file("file2.txt", 2);
+    create_file("file3.txt", 4);
+    display_file_system();
+    delete_file("file2.txt");
+    display_file_system();
+    return 0;
+}

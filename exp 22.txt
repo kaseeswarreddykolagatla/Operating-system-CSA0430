@@ -1,0 +1,71 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_HOLES 10
+#define MAX_PROCESSES 10
+
+typedef struct {
+    int size;
+    int allocated;
+} Hole;
+
+typedef struct {
+    int pid;
+    int size;
+} Process;
+
+Hole holes[MAX_HOLES];
+Process processes[MAX_PROCESSES];
+
+void init_holes() {
+    for(int i = 0; i < MAX_HOLES; i++) {
+        holes[i].size = rand() % 100 + 1; // random size between 1 and 100
+        holes[i].allocated = 0;
+    }
+}
+
+void init_processes() {
+    for(int i = 0; i < MAX_PROCESSES; i++) {
+        processes[i].pid = i;
+        processes[i].size = rand() % 50 + 1; // random size between 1 and 50
+    }
+}
+
+void best_fit() {
+    for(int i = 0; i < MAX_PROCESSES; i++) {
+        int best_hole = -1;
+        int best_size = -1;
+        for(int j = 0; j < MAX_HOLES; j++) {
+            if(!holes[j].allocated && holes[j].size >= processes[i].size) {
+                if(best_size == -1 || holes[j].size < best_size) {
+                    best_hole = j;
+                    best_size = holes[j].size;
+                }
+            }
+        }
+        if(best_hole!= -1) {
+            holes[best_hole].allocated = 1;
+            printf("Process %d allocated to hole %d of size %d\n", processes[i].pid, best_hole, holes[best_hole].size);
+        } else {
+            printf("No hole found for process %d\n", processes[i].pid);
+        }
+    }
+}
+
+void print_holes() {
+    printf("Holes:\n");
+    for(int i = 0; i < MAX_HOLES; i++) {
+        printf("Hole %d: size %d, allocated %d\n", i, holes[i].size, holes[i].allocated);
+    }
+}
+
+int main() {
+    init_holes();
+    init_processes();
+    printf("Initial holes:\n");
+    print_holes();
+    best_fit();
+    printf("Final holes:\n");
+    print_holes();
+    return 0;
+}

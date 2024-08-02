@@ -1,0 +1,98 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+// Structure to represent a process
+typedef struct {
+    int pid; // Process ID
+    int priority; // Priority of the process
+    int burst_time; // Burst time of the process
+    int arrival_time; // Arrival time of the process
+} Process;
+
+// Function to compare two processes based on their priority
+int compare_processes(const void *a, const void *b) {
+    Process *p1 = (Process *)a;
+    Process *p2 = (Process *)b;
+    return p2->priority - p1->priority; // Higher priority first
+}
+
+// Function to implement pre-emptive priority scheduling
+void pre_emptive_priority_scheduling(Process *processes, int n) {
+    int time = 0; // Current time
+    int i, j;
+    Process temp;
+
+    // Sort the processes based on their priority
+    qsort(processes, n, sizeof(Process), compare_processes);
+
+    // Create a queue to store the processes
+    Process queue[n];
+    int queue_size = 0;
+
+    // Add the first process to the queue
+    queue[queue_size++] = processes[0];
+    time = processes[0].arrival_time;
+
+    // Iterate through the processes
+    for (i = 1; i < n; i++) {
+        // Check if the current process has arrived
+        if (processes[i].arrival_time <= time) {
+            // Add the process to the queue
+            queue[queue_size++] = processes[i];
+        } else {
+            // Pre-empt the current process
+            while (queue_size > 0 && queue[0].burst_time > 0) {
+                // Execute the process with the highest priority
+                temp = queue[0];
+                queue[0] = queue[--queue_size];
+                queue[queue_size] = temp;
+                time++;
+                queue[0].burst_time--;
+            }
+
+            // Add the new process to the queue
+            queue[queue_size++] = processes[i];
+        }
+    }
+
+    // Execute the remaining processes
+    while (queue_size > 0) {
+        temp = queue[0];
+        queue[0] = queue[--queue_size];
+        queue[queue_size] = temp;
+        time++;
+        queue[0].burst_time--;
+    }
+
+    // Print the schedule
+    printf("Process\tArrival Time\tBurst Time\tPriority\n");
+    for (i = 0; i < n; i++) {
+        printf("P%d\t%d\t\t%d\t\t%d\n", processes[i].pid, processes[i].arrival_time, processes[i].burst_time, processes[i].priority);
+    }
+}
+
+int main() {
+    int n; // Number of processes
+    printf("Enter the number of processes: ");
+    scanf("%d", &n);
+
+    Process processes[n];
+    int i;
+
+    // Input the process details
+    for (i = 0; i < n; i++) {
+        printf("Enter the details of process P%d:\n", i + 1);
+        printf("Arrival Time: ");
+        scanf("%d", &processes[i].arrival_time);
+        printf("Burst Time: ");
+        scanf("%d", &processes[i].burst_time);
+        printf("Priority: ");
+        scanf("%d", &processes[i].priority);
+        processes[i].pid = i + 1;
+    }
+
+    // Implement pre-emptive priority scheduling
+    pre_emptive_priority_scheduling(processes, n);
+
+    return 0;
+}

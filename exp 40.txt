@@ -1,0 +1,58 @@
+#include <stdio.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+
+int main() {
+    // Create a file
+    FILE *fp = fopen("example.txt", "w");
+    if (fp == NULL) {
+        perror("Error creating file");
+        return 1;
+    }
+    fclose(fp);
+
+    // Get the file permissions
+    struct stat sb;
+    if (stat("example.txt", &sb) == -1) {
+        perror("Error getting file permissions");
+        return 1;
+    }
+
+    // Print the file permissions
+    printf("File permissions: ");
+    printf("%c", (sb.st_mode & S_IRUSR) ? 'r' : '-');
+    printf("%c", (sb.st_mode & S_IWUSR) ? 'w' : '-');
+    printf("%c", (sb.st_mode & S_IXUSR) ? 'x' : '-');
+    printf("%c", (sb.st_mode & S_IRGRP) ? 'r' : '-');
+    printf("%c", (sb.st_mode & S_IWGRP) ? 'w' : '-');
+    printf("%c", (sb.st_mode & S_IXGRP) ? 'x' : '-');
+    printf("%c", (sb.st_mode & S_IROTH) ? 'r' : '-');
+    printf("%c", (sb.st_mode & S_IWOTH) ? 'w' : '-');
+    printf("%c", (sb.st_mode & S_IXOTH) ? 'x' : '-');
+    printf("\n");
+
+    // Change the file permissions
+    if (chmod("example.txt", 0755) == -1) {
+        perror("Error changing file permissions");
+        return 1;
+    }
+
+    // Print the new file permissions
+    if (stat("example.txt", &sb) == -1) {
+        perror("Error getting file permissions");
+        return 1;
+    }
+    printf("New file permissions: ");
+    printf("%c", (sb.st_mode & S_IRUSR) ? 'r' : '-');
+    printf("%c", (sb.st_mode & S_IWUSR) ? 'w' : '-');
+    printf("%c", (sb.st_mode & S_IXUSR) ? 'x' : '-');
+    printf("%c", (sb.st_mode & S_IRGRP) ? 'r' : '-');
+    printf("%c", (sb.st_mode & S_IWGRP) ? 'w' : '-');
+    printf("%c", (sb.st_mode & S_IXGRP) ? 'x' : '-');
+    printf("%c", (sb.st_mode & S_IROTH) ? 'r' : '-');
+    printf("%c", (sb.st_mode & S_IWOTH) ? 'w' : '-');
+    printf("%c", (sb.st_mode & S_IXOTH) ? 'x' : '-');
+    printf("\n");
+
+    return 0;
+}

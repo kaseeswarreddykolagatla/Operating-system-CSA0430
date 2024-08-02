@@ -1,0 +1,115 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_EMPLOYEES 10
+#define EMPLOYEE_RECORD_SIZE sizeof(struct Employee)
+
+typedef struct {
+    int id;
+    char name[20];
+    int age;
+    float salary;
+} Employee;
+
+void addEmployee(FILE *fp) {
+    Employee emp;
+    printf("Enter employee ID: ");
+    scanf("%d", &emp.id);
+    printf("Enter employee name: ");
+    scanf("%s", emp.name);
+    printf("Enter employee age: ");
+    scanf("%d", &emp.age);
+    printf("Enter employee salary: ");
+    scanf("%f", &emp.salary);
+
+    fseek(fp, (emp.id - 1) * EMPLOYEE_RECORD_SIZE, SEEK_SET);
+    fwrite(&emp, EMPLOYEE_RECORD_SIZE, 1, fp);
+}
+
+void displayEmployee(FILE *fp, int id) {
+    Employee emp;
+    fseek(fp, (id - 1) * EMPLOYEE_RECORD_SIZE, SEEK_SET);
+    fread(&emp, EMPLOYEE_RECORD_SIZE, 1, fp);
+
+    printf("Employee ID: %d\n", emp.id);
+    printf("Employee Name: %s\n", emp.name);
+    printf("Employee Age: %d\n", emp.age);
+    printf("Employee Salary: %.2f\n", emp.salary);
+}
+
+void updateEmployee(FILE *fp, int id) {
+    Employee emp;
+    fseek(fp, (id - 1) * EMPLOYEE_RECORD_SIZE, SEEK_SET);
+    fread(&emp, EMPLOYEE_RECORD_SIZE, 1, fp);
+
+    printf("Enter new employee name: ");
+    scanf("%s", emp.name);
+    printf("Enter new employee age: ");
+    scanf("%d", &emp.age);
+    printf("Enter new employee salary: ");
+    scanf("%f", &emp.salary);
+
+    fseek(fp, (id - 1) * EMPLOYEE_RECORD_SIZE, SEEK_SET);
+    fwrite(&emp, EMPLOYEE_RECORD_SIZE, 1, fp);
+}
+
+void deleteEmployee(FILE *fp, int id) {
+    Employee emp;
+    fseek(fp, (id - 1) * EMPLOYEE_RECORD_SIZE, SEEK_SET);
+    fread(&emp, EMPLOYEE_RECORD_SIZE, 1, fp);
+
+    emp.id = -1; // Mark as deleted
+    fseek(fp, (id - 1) * EMPLOYEE_RECORD_SIZE, SEEK_SET);
+    fwrite(&emp, EMPLOYEE_RECORD_SIZE, 1, fp);
+}
+
+int main() {
+    FILE *fp;
+    int choice, id;
+
+    fp = fopen("employees.dat", "wb+");
+    if (fp == NULL) {
+        printf("Error opening file!\n");
+        return 1;
+    }
+
+    while (1) {
+        printf("1. Add Employee\n");
+        printf("2. Display Employee\n");
+        printf("3. Update Employee\n");
+        printf("4. Delete Employee\n");
+        printf("5. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                addEmployee(fp);
+                break;
+            case 2:
+                printf("Enter employee ID: ");
+                scanf("%d", &id);
+                displayEmployee(fp, id);
+                break;
+            case 3:
+                printf("Enter employee ID: ");
+                scanf("%d", &id);
+                updateEmployee(fp, id);
+                break;
+            case 4:
+                printf("Enter employee ID: ");
+                scanf("%d", &id);
+                deleteEmployee(fp, id);
+                break;
+            case 5:
+                fclose(fp);
+                return 0;
+            default:
+                printf("Invalid choice!\n");
+        }
+    }
+
+    fclose(fp);
+    return 0;
+}

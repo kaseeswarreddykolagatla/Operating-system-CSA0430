@@ -1,0 +1,74 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+#define FILE_NAME "example.txt"
+
+int main() {
+    // Create a new file
+    int fd = creat(FILE_NAME, 0644);
+    if(fd == -1) {
+        perror("creat");
+        exit(1);
+    }
+    printf("File created: %s\n", FILE_NAME);
+
+    // Write to the file
+    char* message = "Hello, World!";
+    int bytes_written = write(fd, message, strlen(message));
+    if(bytes_written == -1) {
+        perror("write");
+        exit(1);
+    }
+    printf("Wrote %d bytes to file\n", bytes_written);
+
+    // Close the file
+    if(close(fd) == -1) {
+        perror("close");
+        exit(1);
+    }
+
+    // Open the file for reading
+    fd = open(FILE_NAME, O_RDONLY);
+    if(fd == -1) {
+        perror("open");
+        exit(1);
+    }
+    printf("File opened for reading\n");
+
+    // Read from the file
+    char buffer[1024];
+    int bytes_read = read(fd, buffer, 1024);
+    if(bytes_read == -1) {
+        perror("read");
+        exit(1);
+    }
+    buffer[bytes_read] = '\0';
+    printf("Read %d bytes from file: %s\n", bytes_read, buffer);
+
+    // Close the file
+    if(close(fd) == -1) {
+        perror("close");
+        exit(1);
+    }
+
+    // Rename the file
+    char* new_name = "renamed.txt";
+    if(rename(FILE_NAME, new_name) == -1) {
+        perror("rename");
+        exit(1);
+    }
+    printf("File renamed to: %s\n", new_name);
+
+    // Delete the file
+    if(unlink(new_name) == -1) {
+        perror("unlink");
+        exit(1);
+    }
+    printf("File deleted\n");
+
+    return 0;
+}

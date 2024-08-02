@@ -1,0 +1,86 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+// Structure to represent a process
+typedef struct {
+    int pid; // Process ID
+    int burst_time; // Burst time of the process
+    int arrival_time; // Arrival time of the process
+} Process;
+
+// Function to compare two processes based on their burst time
+int compare_processes(const void *a, const void *b) {
+    Process *p1 = (Process *)a;
+    Process *p2 = (Process *)b;
+    return p1->burst_time - p2->burst_time; // Shortest burst time first
+}
+
+// Function to implement non-preemptive SJF algorithm
+void non_preemptive_sjf(Process *processes, int n) {
+    int time = 0; // Current time
+    int i, j;
+    Process temp;
+
+    // Sort the processes based on their arrival time
+    for (i = 0; i < n; i++) {
+        for (j = i + 1; j < n; j++) {
+            if (processes[i].arrival_time > processes[j].arrival_time) {
+                temp = processes[i];
+                processes[i] = processes[j];
+                processes[j] = temp;
+            }
+        }
+    }
+
+    // Iterate through the processes
+    for (i = 0; i < n; i++) {
+        // Wait until the current process arrives
+        if (processes[i].arrival_time > time) {
+            time = processes[i].arrival_time;
+        }
+
+        // Sort the remaining processes based on their burst time
+        for (j = i; j < n; j++) {
+            for (int k = j + 1; k < n; k++) {
+                if (processes[j].burst_time > processes[k].burst_time) {
+                    temp = processes[j];
+                    processes[j] = processes[k];
+                    processes[k] = temp;
+                }
+            }
+        }
+
+        // Execute the process with the shortest burst time
+        time += processes[i].burst_time;
+    }
+
+    // Print the schedule
+    printf("Process\tArrival Time\tBurst Time\n");
+    for (i = 0; i < n; i++) {
+        printf("P%d\t%d\t\t%d\n", processes[i].pid, processes[i].arrival_time, processes[i].burst_time);
+    }
+}
+
+int main() {
+    int n; // Number of processes
+    printf("Enter the number of processes: ");
+    scanf("%d", &n);
+
+    Process processes[n];
+    int i;
+
+    // Input the process details
+    for (i = 0; i < n; i++) {
+        printf("Enter the details of process P%d:\n", i + 1);
+        printf("Arrival Time: ");
+        scanf("%d", &processes[i].arrival_time);
+        printf("Burst Time: ");
+        scanf("%d", &processes[i].burst_time);
+        processes[i].pid = i + 1;
+    }
+
+    // Implement non-preemptive SJF algorithm
+    non_preemptive_sjf(processes, n);
+
+    return 0;
+}

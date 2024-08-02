@@ -1,0 +1,36 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_LINE_LENGTH 1024
+#define MAX_PATTERN_LENGTH 256
+
+void grep(char* pattern, FILE* file) {
+    char line[MAX_LINE_LENGTH];
+    while(fgets(line, MAX_LINE_LENGTH, file) != NULL) {
+        if(strstr(line, pattern) != NULL) {
+            printf("%s", line);
+        }
+    }
+}
+
+int main(int argc, char* argv[]) {
+    if(argc != 3) {
+        printf("Usage: %s <pattern> <file>\n", argv[0]);
+        exit(1);
+    }
+
+    char* pattern = argv[1];
+    char* file_name = argv[2];
+
+    FILE* file = fopen(file_name, "r");
+    if(file == NULL) {
+        perror("fopen");
+        exit(1);
+    }
+
+    grep(pattern, file);
+
+    fclose(file);
+    return 0;
+}
