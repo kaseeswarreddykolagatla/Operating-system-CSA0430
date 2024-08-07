@@ -1,0 +1,49 @@
+#include <stdio.h>
+#include <stdlib.h>  
+#include <limits.h>
+#define MAX 10
+void fcfs(int req[], int n, int start) {
+    int seek = 0;
+    for (int i = 0; i < n; i++) {
+        seek += abs(req[i] - start);
+        start = req[i];
+    }
+    printf("FCFS Seek Time: %d\n", seek);}
+void sstf(int req[], int n, int start) {
+    int seek = 0, done[MAX] = {0};
+    for (int i = 0; i < n; i++) {
+        int min_dist = INT_MAX, idx = -1;
+        for (int j = 0; j < n; j++) {
+            if (!done[j] && abs(req[j] - start) < min_dist) {
+                min_dist = abs(req[j] - start);
+                idx = j;}}
+        seek += min_dist;
+        start = req[idx];
+        done[idx] = 1;}
+    printf("SSTF Seek Time: %d\n", seek);}
+void scan(int req[], int n, int start, int disk_size) {
+    int seek = 0, i = 0;
+    while (i < n && req[i] < start) i++;
+    for (int j = i; j < n; j++) {
+        seek += abs(req[j] - start);
+        start = req[j];}
+    seek += abs(start - (disk_size - 1));
+    start = disk_size - 1;
+    for (int j = i - 1; j >= 0; j--) {
+        seek += abs(req[j] - start);
+        start = req[j];}
+    printf("SCAN Seek Time: %d\n", seek);}
+int main() {
+    int n, start, disk_size, req[MAX];
+    printf("Enter number of requests: ");
+    scanf("%d", &n);
+    printf("Enter requests: ");
+    for (int i = 0; i < n; i++) scanf("%d", &req[i]);
+    printf("Enter start position and disk size: ");
+    scanf("%d %d", &start, &disk_size);
+    fcfs(req, n, start);
+    sstf(req, n, start);
+    scan(req, n, start, disk_size);
+
+    return 0;
+}
