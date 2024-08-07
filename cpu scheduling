@@ -1,0 +1,48 @@
+#include <stdio.h>
+#define MAX 10
+typedef struct { int id, at, bt, wt, tt; } P;
+void fcfs(P p[], int n) {
+    int time = 0;
+    for (int i = 0; i < n; i++) {
+        p[i].wt = time > p[i].at ? time - p[i].at : 0;
+        time = time > p[i].at ? time + p[i].bt : p[i].at + p[i].bt;
+        p[i].tt = p[i].wt + p[i].bt;
+        printf("P%d: Wait=%d, Turnaround=%d\n", p[i].id, p[i].wt, p[i].tt);
+    }}
+void sjf(P p[], int n) {
+    P temp;
+    for (int i = 0; i < n-1; i++)
+        for (int j = i+1; j < n; j++)
+            if (p[j].bt < p[i].bt) { temp = p[i]; p[i] = p[j]; p[j] = temp; }
+    fcfs(p, n);}
+void rr(P p[], int n, int q) {
+    int rem[MAX], time = 0;
+    for (int i = 0; i < n; i++) rem[i] = p[i].bt;
+    while (1) {
+        int done = 1;
+        for (int i = 0; i < n; i++) {
+            if (rem[i] > 0) {
+                done = 0;
+                int exec = rem[i] > q ? q : rem[i];
+                rem[i] -= exec;
+                time += exec;
+                if (rem[i] == 0) {
+                    p[i].tt = time - p[i].at;
+                    p[i].wt = p[i].tt - p[i].bt;
+                    printf("P%d: Wait=%d, Turnaround=%d\n", p[i].id, p[i].wt, p[i].tt);}}} if (done) break;}}
+int main() {
+    int n, q;
+    P p[MAX], original[MAX];
+    printf("Enter number of processes: ");
+    scanf("%d", &n);
+    printf("Enter arrival and burst times:\n");
+    for (int i = 0; i < n; i++) { p[i].id = i + 1; scanf("%d %d", &p[i].at, &p[i].bt); original[i] = p[i]; }
+    printf("Enter quantum for RR: ");
+    scanf("%d", &q);
+    printf("\nFCFS Scheduling:\n"); fcfs(p, n);
+    for (int i = 0; i < n; i++) p[i] = original[i];
+    printf("\nSJF Scheduling:\n"); sjf(p, n);
+    for (int i = 0; i < n; i++) p[i] = original[i];
+    printf("\nRound Robin Scheduling:\n"); rr(p, n, q);
+    return 0;
+}
