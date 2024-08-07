@@ -1,0 +1,62 @@
+#include <stdio.h>
+#define MAX 10
+void pageReplace(int pages[], int numPages, int numFrames, char *alg) {
+    int frames[MAX] = {-1}, faults = 0;
+    for (int i = 0; i < numPages; i++) {
+        int found = 0;
+        for (int j = 0; j < numFrames; j++) {
+            if (frames[j] == pages[i]) {
+                found = 1;
+                break;
+            }}
+        if (!found) {
+            int replaceIdx = 0;
+            if (alg[0] == 'L') { 
+                int minAge = i;
+                for (int j = 0; j < numFrames; j++) {
+                    if (frames[j] == -1 || frames[j] == pages[i]) {
+                        replaceIdx = j;
+                        break;
+                    } }
+                for (int j = 0; j < numFrames; j++) {
+                    if (frames[j] != -1) {
+                        int k;
+                        for (k = i; k < numPages; k++) {
+                            if (frames[j] == pages[k]) break;
+                        }
+                        if (k < minAge) {
+                            minAge = k;
+                            replaceIdx = j;
+                        }
+                    }} } else if (alg[0] == 'O') { 
+                int maxDist = -1;
+                for (int j = 0; j < numFrames; j++) {
+                    int k;
+                    for (k = i; k < numPages; k++) {
+                        if (frames[j] == pages[k]) break;
+                    }if (k == numPages) {
+                        replaceIdx = j;
+                        break;
+                    }if (k > maxDist) {
+                        maxDist = k;
+                        replaceIdx = j;
+                    }}} else { 
+                replaceIdx = i % numFrames;
+            }
+            frames[replaceIdx] = pages[i];
+            faults++;
+        }}
+    printf("%s Page Faults: %d\n", alg, faults);}
+int main() {
+    int pages[MAX], numPages, numFrames;
+    printf("Enter number of pages: ");
+    scanf("%d", &numPages);
+    printf("Enter pages: ");
+    for (int i = 0; i < numPages; i++) scanf("%d", &pages[i]);
+    printf("Enter number of frames: ");
+    scanf("%d", &numFrames);
+    pageReplace(pages, numPages, numFrames, "FIFO");
+    pageReplace(pages, numPages, numFrames, "LRU");
+    pageReplace(pages, numPages, numFrames, "OPT");
+    return 0;
+}
