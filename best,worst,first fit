@@ -1,0 +1,46 @@
+#include <stdio.h>
+#include <string.h>
+#define MAX 10
+void allocate(int b[], int m, int p[], int n, const char* fit) {
+    int a[MAX]; 
+    for (int i = 0; i < MAX; i++) a[i] = -1; 
+    for (int i = 0; i < n; i++) {
+        int idx = -1;
+        for (int j = 0; j < m; j++) {
+            if (b[j] >= p[i] && (idx == -1 || 
+                (strcmp(fit, "BF") == 0 && b[j] < b[idx]) || 
+                (strcmp(fit, "WF") == 0 && b[j] > b[idx]) || 
+                (strcmp(fit, "FF") == 0))) {
+                idx = j;
+                if (strcmp(fit, "FF") == 0) break;
+            }
+        }
+        if (idx != -1) {
+            a[i] = idx;
+            b[idx] -= p[i];
+        }
+    }
+    printf("\n%s Fit Allocation:\nProcess\tSize\tBlock\n", fit);
+    for (int i = 0; i < n; i++) {
+        printf("%d\t%d\t", i + 1, p[i]);
+        if (a[i] != -1)
+            printf("%d\n", a[i] + 1);
+        else
+            printf("Not Allocated\n");
+    }
+}
+int main() {
+    int b[MAX], p[MAX], m, n;
+    printf("Enter number of blocks and processes: ");
+    scanf("%d %d", &m, &n);
+    printf("Enter block sizes: ");
+    for (int i = 0; i < m; i++) scanf("%d", &b[i]);
+    printf("Enter process sizes: ");
+    for (int i = 0; i < n; i++) scanf("%d", &p[i]);
+    int b1[MAX], b2[MAX];
+    for (int i = 0; i < m; i++) b1[i] = b2[i] = b[i];
+    allocate(b, m, p, n, "FF");
+    allocate(b1, m, p, n, "BF");
+    allocate(b2, m, p, n, "WF");
+return 0;
+}
